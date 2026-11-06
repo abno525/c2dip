@@ -4,6 +4,7 @@ import base64
 import json
 import os
 import secrets
+import shlex
 import subprocess
 import sys
 import time
@@ -268,6 +269,19 @@ def console(timeout, interval):
             continue
         if line.strip() in ("exit", "quit", ":q"):
             break
+        try:
+            words = shlex.split(line)
+        except ValueError:
+            words = []
+        if words and words[0] == "upload":
+            if len(words) < 2:
+                print("usage: upload <path>", file=sys.stderr)
+            else:
+                try:
+                    cmd_upload(" ".join(words[1:]))
+                except (RuntimeError, OSError) as e:
+                    print(f"upload error: {e}", file=sys.stderr)
+            continue
         try:
             send_cmd(line, timeout, interval)
         except KeyboardInterrupt:
