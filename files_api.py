@@ -500,7 +500,7 @@ def main():
     pr.add_argument("--once", action="store_true", help="process available items and exit")
     pr.add_argument("--interval", type=float, default=1.0)
     pr.add_argument("--idle-timeout", type=float, default=0.0)
-    pr.add_argument("--out", default=os.path.join(HERE, "downloads"))
+    pr.add_argument("--out", default=os.getcwd())
 
     pu = sub.add_parser("upload", help="send a file in chunks over the Files API")
     pu.add_argument("path")
