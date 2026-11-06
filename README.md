@@ -11,6 +11,6 @@ Two-way command console over the DeepSeek Files API:
 ./files_api.py download
 ```
 
-Inside the console, `upload <path>` sends a local file.
+Inside the console, `upload <path>` sends a local file and `download <path>` fetches a file from recv.
 
 Set `DEEPSEEK_API_KEY`, or put it in `key.txt`.

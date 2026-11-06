@@ -123,6 +123,8 @@ def parse_name(filename):
         prefix, payload = "r", stem[2:]
     elif stem.startswith("f-"):
         prefix, payload = "f", stem[2:]
+    elif stem.startswith("g-"):
+        prefix, payload = "g", stem[2:]
     else:
         return None
     try:
@@ -213,6 +215,57 @@ def download(out_dir, wait, interval):
         time.sleep(interval)
 
 
+def send_get(path, timeout, interval, out_dir):
+    gid = secrets.token_hex(4)
+    pieces = chunks_of(path.encode("utf-8"), FILE_CHUNK)
+    for seq, chunk in enumerate(pieces):
+        upload_png(make_name("g-", {"i": gid, "s": seq, "n": len(pieces), "d": b64(chunk)}))
+
+    deadline = time.time() + timeout if timeout and timeout > 0 else None
+    got = {}
+    total = None
+    errparts = {}
+    errtotal = None
+    while True:
+        for f in list_remote():
+            p = parse_name(f.get("filename", ""))
+            if not p:
+                continue
+            kind, o = p
+            if kind == "f" and o.get("q") == gid:
+                got[o["s"]] = (o, f["id"])
+                total = o["n"]
+            elif kind == "r" and o["i"] == gid:
+                errparts[o["s"]] = (o, f["id"])
+                errtotal = o["n"]
+        if errtotal is not None and len(errparts) == errtotal:
+            msg = b"".join(unb64(errparts[s][0]["d"]) for s in range(errtotal)).decode("utf-8", "replace")
+            for fid in {v[1] for v in errparts.values()}:
+                try:
+                    delete_remote(fid)
+                except RuntimeError:
+                    pass
+            raise RuntimeError(msg)
+        if total is not None and len(got) == total:
+            break
+        if deadline is not None and time.time() > deadline:
+            raise RuntimeError(f"timed out waiting for {path!r} from recv")
+        time.sleep(interval)
+
+    data = b"".join(unb64(got[s][0]["d"]) for s in range(total))
+    name = safe_name(got[0][0].get("name", os.path.basename(path)))
+    os.makedirs(out_dir, exist_ok=True)
+    dest = unique_path(out_dir, name)
+    with open(dest, "wb") as fh:
+        fh.write(data)
+    for fid in {v[1] for v in got.values()}:
+        try:
+            delete_remote(fid)
+        except RuntimeError:
+            pass
+    print(dest)
+
+
 def send_cmd(cmd, timeout=300.0, interval=0.5):
     cid = secrets.token_hex(4)
     pieces = chunks_of(cmd.encode("utf-8"))
@@ -255,7 +308,7 @@ def send_cmd(cmd, timeout=300.0, interval=0.5):
                 print(f"cleanup failed: {e}", file=sys.stderr)
 
 
-def console(timeout, interval):
+def console(timeout, interval, out_dir):
     interactive = sys.stdin.isatty()
     while True:
         try:
@@ -282,6 +335,15 @@ def console(timeout, interval):
                 except (RuntimeError, OSError) as e:
                     print(f"upload error: {e}", file=sys.stderr)
             continue
+        if words and words[0] == "download":
+            if len(words) < 2:
+                print("usage: download <path>", file=sys.stderr)
+            else:
+                try:
+                    send_get(" ".join(words[1:]), timeout, interval, out_dir)
+                except (RuntimeError, OSError) as e:
+                    print(f"download error: {e}", file=sys.stderr)
+            continue
         try:
             send_cmd(line, timeout, interval)
         except KeyboardInterrupt:
@@ -294,6 +356,7 @@ def console(timeout, interval):
 
 def serve(once, interval, idle_timeout, out_dir):
     pending = {}
+    gets = {}
     start = time.time()
     print("[recv] listening", file=sys.stderr, flush=True)
     while True:
@@ -302,8 +365,50 @@ def serve(once, interval, idle_timeout, out_dir):
         commands = []
         for f in files:
             p = parse_name(f.get("filename", ""))
-            if p and p[0] == "c":
+            if not p:
+                continue
+            if p[0] == "c":
                 commands.append((f, p[1]))
+            elif p[0] == "g":
+                gets.setdefault(p[1]["i"], {})[p[1]["s"]] = (p[1], f["id"])
+
+        for gid, parts in list(gets.items()):
+            total = next(iter(parts.values()))[0].get("n")
+            if total is None or len(parts) < total:
+                continue
+            reqpath = b"".join(unb64(parts[s][0]["d"]) for s in range(total)).decode("utf-8", "replace")
+            print(f"[recv] get << {reqpath}", file=sys.stderr, flush=True)
+            try:
+                if not os.path.isfile(reqpath):
+                    raise OSError(f"not a file: {reqpath}")
+                with open(reqpath, "rb") as fh:
+                    data = fh.read()
+                name = safe_name(os.path.basename(reqpath))
+                fid = secrets.token_hex(4)
+                pieces = chunks_of(data, FILE_CHUNK)
+                for seq, chunk in enumerate(pieces):
+                    obj = {"i": fid, "s": seq, "n": len(pieces), "d": b64(chunk), "q": gid}
+                    if seq == 0:
+                        obj["name"] = name
+                    upload_png(make_name("f-", obj))
+                print(f"[recv] get -> {name} ({len(data)} bytes)", file=sys.stderr, flush=True)
+            except (OSError, RuntimeError) as e:
+                msg = str(e).encode("utf-8", "replace")
+                pieces = chunks_of(msg)
+                for seq, chunk in enumerate(pieces):
+                    upload_png(
+                        make_name(
+                            "r-",
+                            {"i": gid, "s": seq, "n": len(pieces), "x": 1, "d": b64(chunk)},
+                        )
+                    )
+                print(f"[recv] get failed: {e}", file=sys.stderr, flush=True)
+            for fid in {v[1] for v in parts.values()}:
+                try:
+                    delete_remote(fid)
+                except RuntimeError as err:
+                    print(f"[recv] delete failed: {err}", file=sys.stderr)
+            del gets[gid]
 
         for f, o in commands:
             pending.setdefault(o["i"], {})[o["s"]] = (o, f["id"])
@@ -353,14 +458,14 @@ def show_list():
     if not data:
         print("no files")
         return
-    groups = {"c": {}, "r": {}, "f": {}}
+    groups = {"c": {}, "r": {}, "f": {}, "g": {}}
     for f in data:
         p = parse_name(f.get("filename", ""))
         if not p:
             print(f"{f['id']}  {f['filename']}  (unrecognized)")
             continue
         groups[p[0]].setdefault(p[1]["i"], {})[p[1]["s"]] = p[1]
-    for kind, title in (("c", "command"), ("r", "result"), ("f", "file")):
+    for kind, title in (("c", "command"), ("r", "result"), ("f", "file"), ("g", "get")):
         for cid, parts in groups[kind].items():
             total = next(iter(parts.values())).get("n")
             done = total is not None and len(parts) == total
@@ -374,9 +479,11 @@ def show_list():
                 text = data_bytes.decode("utf-8", "replace")
                 code = next(iter(parts.values())).get("x")
                 print(f"{cid}  result   exit={code}  {text!r}")
-            else:
+            elif kind == "f":
                 name = parts[0].get("name", "file")
                 print(f"{cid}  file     {name}  {len(data_bytes)} bytes")
+            else:
+                print(f"{cid}  get      {data_bytes.decode('utf-8', 'replace')}")
 
 
 def main():
@@ -387,6 +494,7 @@ def main():
     ps.add_argument("command", nargs="*")
     ps.add_argument("--timeout", type=float, default=300.0, help="seconds to wait for a result (0 = forever)")
     ps.add_argument("--interval", type=float, default=0.5)
+    ps.add_argument("--out", default=os.path.join(HERE, "downloads"))
 
     pr = sub.add_parser("recv", help="run uploaded commands, receive files, and send output back")
     pr.add_argument("--once", action="store_true", help="process available items and exit")
@@ -411,7 +519,7 @@ def main():
             if args.command:
                 send_cmd(" ".join(args.command), args.timeout, args.interval)
             else:
-                console(args.timeout, args.interval)
+                console(args.timeout, args.interval, args.out)
         elif args.action == "recv":
             serve(args.once, args.interval, args.idle_timeout, args.out)
         elif args.action == "upload":
