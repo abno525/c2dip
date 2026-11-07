@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.svg" alt="c2dip logo" width="440">
+  <img src="assets/logo.svg" alt="c2dip" width="440" height="154">
 </p>
 
 # c2dip

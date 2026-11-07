@@ -1,107 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" width="1200" height="600" role="img" aria-label="c2dip wordmark with a whale">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#01040f"/>
-      <stop offset="0.6" stop-color="#06122b"/>
-      <stop offset="1" stop-color="#020a1c"/>
-    </linearGradient>
-    <radialGradient id="halo" cx="0.62" cy="0.62" r="0.6">
-      <stop offset="0" stop-color="#1d4ed8" stop-opacity="0.55"/>
-      <stop offset="0.55" stop-color="#0b3aa5" stop-opacity="0.22"/>
-      <stop offset="1" stop-color="#020a1c" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="textGrad" gradientUnits="userSpaceOnUse" x1="0" y1="250" x2="0" y2="490">
-      <stop offset="0" stop-color="#e8fbff"/>
-      <stop offset="0.28" stop-color="#7dd3fc"/>
-      <stop offset="0.6" stop-color="#38bdf8"/>
-      <stop offset="0.85" stop-color="#2563eb"/>
-      <stop offset="1" stop-color="#1e3a8a"/>
-    </linearGradient>
-    <linearGradient id="whaleGrad" gradientUnits="userSpaceOnUse" x1="40" y1="60" x2="360" y2="180">
-      <stop offset="0" stop-color="#a5f3fc"/>
-      <stop offset="0.35" stop-color="#38bdf8"/>
-      <stop offset="0.75" stop-color="#2563eb"/>
-      <stop offset="1" stop-color="#1e40af"/>
-    </linearGradient>
-    <filter id="wordGlow" x="-20%" y="-40%" width="140%" height="200%">
-      <feDropShadow dx="0" dy="0" stdDeviation="16" flood-color="#38bdf8" flood-opacity="0.55"/>
-      <feDropShadow dx="0" dy="12" stdDeviation="6" flood-color="#02040c" flood-opacity="0.9"/>
-    </filter>
-    <filter id="whaleGlow" x="-40%" y="-40%" width="180%" height="180%">
-      <feDropShadow dx="0" dy="0" stdDeviation="14" flood-color="#22d3ee" flood-opacity="0.5"/>
-    </filter>
-    <filter id="castShadow" x="-40%" y="-40%" width="180%" height="180%">
-      <feGaussianBlur stdDeviation="22"/>
-    </filter>
-    <clipPath id="frame">
-      <rect width="1200" height="600" rx="52"/>
-    </clipPath>
-  </defs>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 224" width="640" height="224" role="img" aria-labelledby="title description">
+  <title id="title">c2dip</title>
+  <desc id="description">Two offset file slips with opposing clipped corners represent commands and replies. A lowercase c2dip wordmark sits beside them on charcoal.</desc>
 
-  <rect width="1200" height="600" rx="52" fill="url(#bg)"/>
+  <rect width="640" height="224" fill="#121820"/>
 
-  <g clip-path="url(#frame)">
-    <rect width="1200" height="600" fill="url(#halo)"/>
-
-    <g fill="#7dd3fc" opacity="0.35">
-      <circle cx="180" cy="120" r="3"/>
-      <circle cx="330" cy="80" r="2"/>
-      <circle cx="520" cy="130" r="2.5"/>
-      <circle cx="900" cy="90" r="2"/>
-      <circle cx="1060" cy="150" r="3"/>
-      <circle cx="980" cy="420" r="2"/>
-      <circle cx="200" cy="500" r="2.5"/>
-      <circle cx="1120" cy="320" r="2"/>
-      <circle cx="70" cy="360" r="2"/>
-    </g>
-
-    <g stroke="#38bdf8" stroke-width="2" fill="none" opacity="0.22">
-      <circle cx="905" cy="140" r="10"/>
-      <circle cx="935" cy="105" r="6"/>
-      <circle cx="960" cy="70" r="4"/>
-      <circle cx="1035" cy="235" r="7"/>
-      <circle cx="1060" cy="200" r="4.5"/>
-    </g>
+  <!-- Two slips, one in each direction. -->
+  <g transform="translate(80 72)" fill="#789cda">
+    <path d="M0 0H72L88 16V32H0Z"/>
+    <path d="M16 44H104V76H32L16 60Z"/>
   </g>
 
-  <path id="arch" d="M 140 472 Q 600 312 1060 472" fill="none"/>
-
-  <g filter="url(#wordGlow)">
-    <text font-family="'Arial Black', 'Arial Bold', Impact, 'DejaVu Sans', sans-serif"
-          font-weight="900" font-size="208" letter-spacing="4"
-          fill="url(#textGrad)" stroke="#03091c" stroke-width="16" paint-order="stroke"
-          stroke-linejoin="round">
-      <textPath href="#arch" startOffset="50%" text-anchor="middle">c2dip</textPath>
-    </text>
+  <!-- Custom letterforms; paths keep the lettering consistent across renderers. -->
+  <g transform="translate(224 55) scale(1.06)" fill="#dce3ec" fill-rule="evenodd">
+    <!-- c -->
+    <path d="M54 25C48 19 41 16 31 16C12 16 0 29 0 49C0 69 12 82 31 82C41 82 49 79 55 72L47 64C43 68 38 71 32 71C20 71 13 63 13 49C13 35 20 27 32 27C38 27 43 30 47 34Z"/>
+    <!-- 2 -->
+    <path transform="translate(72)" d="M0 80V70L31 40C39 32 43 27 43 21C43 14 38 10 29 10C20 10 14 14 8 22L0 15C7 4 17 0 30 0C47 0 56 8 56 21C56 31 51 38 40 48L17 69H57V80Z"/>
+    <!-- d -->
+    <path transform="translate(146)" d="M45 0H58V80H46L45 72C41 78 34 82 25 82C10 82 0 69 0 49C0 29 10 16 26 16C34 16 41 19 45 25ZM45 49C45 35 40 27 29 27C18 27 13 35 13 49C13 63 18 71 29 71C40 71 45 63 45 49Z"/>
+    <!-- i -->
+    <path transform="translate(224)" d="M0-3H13V9H0ZM0 18H13V80H0Z"/>
+    <!-- p -->
+    <path transform="translate(258)" d="M0 18H12L13 26C18 19 24 16 33 16C49 16 59 29 59 49C59 69 49 82 33 82C24 82 18 79 13 73V104H0ZM13 49C13 63 19 71 30 71C41 71 46 63 46 49C46 35 41 27 30 27C19 27 13 35 13 49Z"/>
   </g>
-
-  <g transform="translate(644 252) scale(1.02) rotate(-4 200 110)" opacity="0.5" filter="url(#castShadow)">
-    <g id="castWhale" fill="#01030a">
-      <path d="M 36 112 C 42 74 80 50 126 50 C 182 50 232 62 270 82 C 284 89 296 95 306 99 C 324 78 350 58 378 46 C 372 70 358 90 345 103 C 362 118 376 145 384 170 C 352 158 328 138 310 116 C 302 134 288 148 268 156 C 232 170 172 174 122 164 C 78 155 46 138 36 112 Z"/>
-      <path d="M 150 150 C 158 174 180 190 204 192 C 190 174 178 158 172 146 Z"/>
-    </g>
-  </g>
-
-  <g transform="translate(668 84) scale(0.95) rotate(-4 200 110)" filter="url(#whaleGlow)">
-    <g fill="url(#whaleGrad)">
-      <path d="M 36 112 C 42 74 80 50 126 50 C 182 50 232 62 270 82 C 284 89 296 95 306 99 C 324 78 350 58 378 46 C 372 70 358 90 345 103 C 362 118 376 145 384 170 C 352 158 328 138 310 116 C 302 134 288 148 268 156 C 232 170 172 174 122 164 C 78 155 46 138 36 112 Z"/>
-      <path d="M 150 150 C 158 174 180 190 204 192 C 190 174 178 158 172 146 Z"/>
-    </g>
-    <g stroke="#7dd3fc" fill="none" stroke-width="5" stroke-linecap="round" opacity="0.85">
-      <path d="M 86 48 C 82 32 92 20 100 12"/>
-      <path d="M 86 48 C 96 34 110 30 120 30"/>
-      <path d="M 86 48 C 74 36 64 30 52 30"/>
-    </g>
-    <g fill="#a5f3fc">
-      <circle cx="100" cy="6" r="4"/>
-      <circle cx="122" cy="24" r="3"/>
-      <circle cx="50" cy="24" r="3"/>
-    </g>
-    <circle cx="86" cy="104" r="8" fill="#020617"/>
-    <path d="M 62 148 C 110 166 170 166 220 152" fill="none" stroke="#a5f3fc" stroke-width="5" stroke-linecap="round" opacity="0.35"/>
-  </g>
-
-  <text x="600" y="558" text-anchor="middle"
-        font-family="'Arial', 'DejaVu Sans', sans-serif" font-size="26" font-weight="700"
-        letter-spacing="9" fill="#7dd3fc" opacity="0.8">COMMUNICATION IS POSSIBLE</text>
 </svg>
