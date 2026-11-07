@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/logo.svg" alt="c2dip logo" width="160">
+</p>
+
 # c2dip
 
 Communication is possible.

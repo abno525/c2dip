@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="c2dip logo">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#040a24"/>
+      <stop offset="0.55" stop-color="#0b2a8f"/>
+      <stop offset="1" stop-color="#06b6d4"/>
+    </linearGradient>
+    <linearGradient id="win" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0a1230"/>
+      <stop offset="1" stop-color="#061a3a"/>
+    </linearGradient>
+    <linearGradient id="accent" gradientUnits="userSpaceOnUse" x1="120" y1="0" x2="400" y2="0">
+      <stop offset="0" stop-color="#38bdf8"/>
+      <stop offset="1" stop-color="#22d3ee"/>
+    </linearGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="7" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="soft" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="20"/>
+    </filter>
+    <clipPath id="round">
+      <rect width="512" height="512" rx="112"/>
+    </clipPath>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+
+  <g clip-path="url(#round)">
+    <circle cx="110" cy="86" r="150" fill="#2563eb" opacity="0.5" filter="url(#soft)"/>
+    <circle cx="430" cy="440" r="160" fill="#06b6d4" opacity="0.35" filter="url(#soft)"/>
+
+    <g stroke="#7dd3fc" stroke-opacity="0.1" stroke-width="2">
+      <path d="M0 96 H512 M0 416 H512 M96 0 V512 M416 0 V512"/>
+      <path d="M0 256 H512 M256 0 V512" stroke-opacity="0.06"/>
+    </g>
+
+    <g fill="#7dd3fc" opacity="0.35">
+      <circle cx="96" cy="96" r="4"/>
+      <circle cx="416" cy="96" r="4"/>
+      <circle cx="96" cy="416" r="4"/>
+      <circle cx="416" cy="416" r="4"/>
+    </g>
+  </g>
+
+  <rect x="96" y="128" width="320" height="216" rx="28" fill="url(#win)" stroke="#38bdf8" stroke-opacity="0.55" stroke-width="3"/>
+
+  <circle cx="130" cy="162" r="8" fill="#38bdf8"/>
+  <circle cx="156" cy="162" r="8" fill="#22d3ee" opacity="0.75"/>
+  <circle cx="182" cy="162" r="8" fill="#a5f3fc" opacity="0.5"/>
+
+  <path d="M146 214 L188 248 L146 282" fill="none" stroke="url(#accent)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
+
+  <rect x="206" y="266" width="52" height="16" rx="8" fill="url(#accent)" opacity="0.9"/>
+
+  <g stroke="url(#accent)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#glow)">
+    <path d="M320 212 V284"/>
+    <path d="M307 270 L320 284 L333 270"/>
+    <path d="M362 284 V212"/>
+    <path d="M349 226 L362 212 L375 226"/>
+  </g>
+
+  <text x="256" y="428" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="68" font-weight="700" fill="#e0f2fe" letter-spacing="8">c2dip</text>
+
+  <rect x="196" y="450" width="120" height="6" rx="3" fill="url(#accent)" opacity="0.85"/>
+</svg>
