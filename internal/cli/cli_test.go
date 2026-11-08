@@ -52,6 +52,28 @@ func TestRoleRestrictedEntryPoints(t *testing.T) {
 	}
 }
 
+func TestSenderDefaultsToSend(t *testing.T) {
+	for _, test := range []struct {
+		input, expected []string
+	}{
+		{nil, []string{"send"}},
+		{[]string{"--channel", "lab"}, []string{"send", "--channel", "lab"}},
+		{[]string{"--channel", "lab", "uname -a"}, []string{"send", "--channel", "lab", "uname -a"}},
+		{[]string{"upload", "file.txt"}, []string{"upload", "file.txt"}},
+		{[]string{"--version"}, []string{"--version"}},
+	} {
+		actual := senderArguments(test.input)
+		if len(actual) != len(test.expected) {
+			t.Fatalf("%v: got %v", test.input, actual)
+		}
+		for index := range actual {
+			if actual[index] != test.expected[index] {
+				t.Fatalf("%v: got %v", test.input, actual)
+			}
+		}
+	}
+}
+
 func TestParsingRejectsUnsafeOrUnboundedOptions(t *testing.T) {
 	for _, arguments := range [][]string{{"recv", "--interval", "0"}, {"send", "--timeout", "-1"},
 		{"send", "--id", "../escape"}, {"recv", "--ttl", "1"}, {"send", "--max-output", "0"}} {

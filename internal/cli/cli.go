@@ -621,7 +621,21 @@ type runtimeConfig struct {
 
 func Main(argv []string) int { return mainWithConfig(argv, runtimeConfig{}) }
 
-func MainSender(argv []string) int { return mainWithConfig(argv, runtimeConfig{mode: "sender"}) }
+func senderArguments(argv []string) []string {
+	if len(argv) == 1 && (argv[0] == "--help" || argv[0] == "-h" || argv[0] == "--version") {
+		return argv
+	}
+	actions := map[string]bool{"init": true, "send": true, "recv": true, "upload": true, "download": true,
+		"status": true, "cancel": true, "jobs": true, "resume": true, "list": true}
+	if len(argv) == 0 || !actions[argv[0]] {
+		return append([]string{"send"}, argv...)
+	}
+	return argv
+}
+
+func MainSender(argv []string) int {
+	return mainWithConfig(senderArguments(argv), runtimeConfig{mode: "sender"})
+}
 
 func MainReceiver(argv []string, embeddedAPIKey string, bundle []byte) int {
 	channelKeys, err := keys.Parse(bundle, "", "receiver")
