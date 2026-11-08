@@ -6,5 +6,6 @@ __pycache__/
 downloads/
 build/
 dist/
+/c2dip
 .venv*/
 *.egg-info/
