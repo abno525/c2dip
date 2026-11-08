@@ -1,24 +1,5 @@
-<p align="center">
-  <img src="assets/logo.svg" alt="c2dip" width="440" height="154">
-</p>
+c2dip is a two-way console for running commands and moving small files between two machines through the DeepSeek Files API. Encrypted messages travel in the filenames of tiny PNG uploads, and the client connects directly only to `https://api.deepseek.com`, ignoring proxies and rejecting redirects elsewhere. It keeps local job history and supports status checks, cancellation, and resuming interrupted transfers.
 
-# c2dip
+Each channel has its own asymmetric encryption and signing keys, with separate private-key bundles for the client and receiver. Run `./c2dip init --channel lab` once, then give each endpoint only its corresponding `.c2dip/keys/lab/client.json` or `receiver.json` bundle; each already contains the other endpoint's public keys. Both endpoints also need `DEEPSEEK_API_KEY` or a `key.txt` beside the executable, using DeepSeek credentials that can access the same file store.
 
-Communication is possible.
-
-Two-way command console over the DeepSeek Files API:
-
-```
-./files_api.py recv
-./files_api.py send
-./files_api.py upload ./some_file
-./files_api.py download
-```
-
-- `recv` runs received commands and saves received files in its current
-  directory (`--out DIR` to change).
-- `send` is a console. `upload <path>` sends a local file; `download <path>`
-  fetches a file from recv (relative to recv's directory, or absolute).
-- `download` with no path saves any pending files to `downloads/`.
-
-Set `DEEPSEEK_API_KEY`, or put it in `key.txt`.
+Build the static Go executable with `bash scripts/build-linux.sh` (requires Docker), then copy `dist/c2dip` to each Linux machine; only the receiver needs Bash for command execution. Start the receiver with `./c2dip recv --channel lab` and the client console with `./c2dip send --channel lab`, adding `--key-file PATH` if you put its bundle elsewhere. Use `./c2dip --help` for commands, and keep the `.c2dip` directory beside each executable so keys and job history survive restarts.

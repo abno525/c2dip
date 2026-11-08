@@ -1,4 +1,10 @@
 key.txt
+channel.key
+.c2dip/
 generated.png
 __pycache__/
 downloads/
+build/
+dist/
+.venv*/
+*.egg-info/
