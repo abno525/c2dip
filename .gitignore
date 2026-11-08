@@ -7,5 +7,8 @@ downloads/
 build/
 dist/
 /c2dip
+/c2dip-sender
+/c2dip-receiver
+/internal/embedded/generated.go
 .venv*/
 *.egg-info/

@@ -54,6 +54,11 @@ func TestEncryptionSigningIsolationAndBundles(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
+	receiverRaw, _ := os.ReadFile(paths[1])
+	parsed, err := Parse(receiverRaw, "", "receiver")
+	if err != nil || parsed.Channel != "saved" {
+		t.Fatalf("embedded parse: %v %#v", err, parsed)
+	}
 	original, _ := os.ReadFile(paths[0])
 	if _, err := CreateChannel(directory, "saved"); err == nil {
 		t.Fatal("overwrote channel")

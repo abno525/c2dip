@@ -170,6 +170,10 @@ func Load(path, channel, role string) (*ChannelKeys, error) {
 	if err != nil {
 		return nil, err
 	}
+	return Parse(raw, channel, role)
+}
+
+func Parse(raw []byte, channel, role string) (*ChannelKeys, error) {
 	if len(raw) > 8192 {
 		return nil, errors.New("key bundle is too large")
 	}
@@ -215,7 +219,7 @@ func Load(path, channel, role string) (*ChannelKeys, error) {
 	if err := validateChannel(doc.Channel); err != nil {
 		return nil, err
 	}
-	if doc.Channel != channel {
+	if channel != "" && doc.Channel != channel {
 		return nil, errors.New("key bundle belongs to a different channel")
 	}
 	if doc.Role != "client" && doc.Role != "receiver" || role != "" && doc.Role != role {

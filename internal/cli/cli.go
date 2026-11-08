@@ -156,11 +156,7 @@ func envDefault(name, fallback string) string {
 	return fallback
 }
 
-func credentials(path, channel, role string) (string, *keys.ChannelKeys, error) {
-	channelKeys, err := keys.Load(path, channel, role)
-	if err != nil {
-		return "", nil, err
-	}
+func apiCredential(embedded string) (string, error) {
 	apiKey := strings.TrimSpace(os.Getenv("DEEPSEEK_API_KEY"))
 	if apiKey == "" {
 		raw, err := os.ReadFile(filepath.Join(rootDirectory, "key.txt"))
@@ -169,9 +165,12 @@ func credentials(path, channel, role string) (string, *keys.ChannelKeys, error) 
 		}
 	}
 	if apiKey == "" {
-		return "", nil, errors.New("missing API key: set DEEPSEEK_API_KEY or create key.txt")
+		apiKey = strings.TrimSpace(embedded)
 	}
-	return apiKey, channelKeys, nil
+	if apiKey == "" {
+		return "", errors.New("missing API key: set DEEPSEEK_API_KEY or create key.txt")
+	}
+	return apiKey, nil
 }
 
 func history(database *state.State, asJSON bool) error {
@@ -614,13 +613,49 @@ func run(instance *service.Service, args *arguments, signals <-chan os.Signal) (
 	return 1, errors.New("unknown action")
 }
 
-func Main(argv []string) int {
+type runtimeConfig struct {
+	mode           string
+	embeddedAPIKey string
+	embeddedKeys   *keys.ChannelKeys
+}
+
+func Main(argv []string) int { return mainWithConfig(argv, runtimeConfig{}) }
+
+func MainSender(argv []string) int { return mainWithConfig(argv, runtimeConfig{mode: "sender"}) }
+
+func MainReceiver(argv []string, embeddedAPIKey string, bundle []byte) int {
+	channelKeys, err := keys.Parse(bundle, "", "receiver")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "error: invalid embedded receiver bundle:", err)
+		return 1
+	}
+	if strings.TrimSpace(embeddedAPIKey) == "" {
+		fmt.Fprintln(os.Stderr, "error: receiver binary has no embedded DeepSeek API key")
+		return 1
+	}
+	if len(argv) == 1 && argv[0] == "--version" {
+		fmt.Fprintln(os.Stdout, Version)
+		return 0
+	}
+	arguments := append([]string{"recv", "--channel", channelKeys.Channel}, argv...)
+	return mainWithConfig(arguments, runtimeConfig{mode: "receiver", embeddedAPIKey: embeddedAPIKey, embeddedKeys: channelKeys})
+}
+
+func mainWithConfig(argv []string, config runtimeConfig) int {
 	args, err := parse(argv)
 	if errors.Is(err, pflag.ErrHelp) {
 		return 0
 	}
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
+		return 1
+	}
+	if config.mode == "sender" && args.action == "recv" {
+		fmt.Fprintln(os.Stderr, "error: c2dip-sender cannot run receiver mode")
+		return 1
+	}
+	if config.mode == "receiver" && (args.action != "recv" || len(args.positionals) != 0) {
+		fmt.Fprintln(os.Stderr, "error: c2dip-receiver accepts receiver options only")
 		return 1
 	}
 	if args.action == "init" {
@@ -685,14 +720,28 @@ func Main(argv []string) int {
 	if receiver {
 		role = "receiver"
 	}
-	if args.keyFile == "" {
-		args.keyFile = filepath.Join(args.stateDir, "keys", args.channel, role+".json")
-	}
 	roleCheck := role
 	if args.action == "list" {
 		roleCheck = ""
 	}
-	apiKey, channelKeys, err := credentials(args.keyFile, args.channel, roleCheck)
+	var channelKeys *keys.ChannelKeys
+	if config.embeddedKeys != nil && args.keyFile == "" {
+		channelKeys = config.embeddedKeys
+		if channelKeys.Channel != args.channel || roleCheck != "" && channelKeys.Role != roleCheck {
+			fmt.Fprintln(os.Stderr, "error: embedded key bundle does not match the requested channel or role")
+			return 1
+		}
+	} else {
+		if args.keyFile == "" {
+			args.keyFile = filepath.Join(args.stateDir, "keys", args.channel, role+".json")
+		}
+		channelKeys, err = keys.Load(args.keyFile, args.channel, roleCheck)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "error:", err)
+			return 1
+		}
+	}
+	apiKey, err := apiCredential(config.embeddedAPIKey)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		return 1
