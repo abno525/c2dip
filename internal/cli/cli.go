@@ -69,14 +69,18 @@ func parse(argv []string) (*arguments, error) {
 	result := &arguments{action: argv[0]}
 	stateDefault := os.Getenv("C2DIP_STATE_DIR")
 	if stateDefault == "" {
-		stateDefault = filepath.Join(rootDirectory, ".c2dip")
+		stateDefault = filepath.Join(rootDirectory, "state")
+	}
+	keysDefault := os.Getenv("C2DIP_KEYS_DIR")
+	if keysDefault == "" {
+		keysDefault = filepath.Join(rootDirectory, "keys")
 	}
 	set := pflag.NewFlagSet(result.action, pflag.ContinueOnError)
 	set.SetInterspersed(true)
 	set.SetOutput(os.Stdout)
 	set.StringVar(&result.channel, "channel", envDefault("C2DIP_CHANNEL", "default"), "channel name")
 	if result.action == "init" {
-		set.StringVar(&result.stateDir, "key-dir", filepath.Join(stateDefault, "keys"), "parent directory for channel bundles")
+		set.StringVar(&result.stateDir, "key-dir", keysDefault, "parent directory for channel bundles")
 	} else {
 		set.StringVar(&result.node, "id", "", "stable local node ID")
 		set.StringVar(&result.peer, "peer", "", "recipient node ID")
@@ -154,6 +158,13 @@ func envDefault(name, fallback string) string {
 		return value
 	}
 	return fallback
+}
+
+func keysRoot() string {
+	if value := os.Getenv("C2DIP_KEYS_DIR"); value != "" {
+		return value
+	}
+	return filepath.Join(rootDirectory, "keys")
 }
 
 func apiCredential(embedded string) (string, error) {
@@ -747,7 +758,7 @@ func mainWithConfig(argv []string, config runtimeConfig) int {
 		}
 	} else {
 		if args.keyFile == "" {
-			args.keyFile = filepath.Join(args.stateDir, "keys", args.channel, role+".json")
+			args.keyFile = filepath.Join(keysRoot(), args.channel, role+".json")
 		}
 		channelKeys, err = keys.Load(args.keyFile, args.channel, roleCheck)
 		if err != nil {

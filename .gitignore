@@ -1,6 +1,8 @@
 key.txt
 channel.key
 .c2dip/
+/keys/
+/state/
 generated.png
 __pycache__/
 downloads/
