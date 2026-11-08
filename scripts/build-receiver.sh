@@ -2,7 +2,7 @@
 set -euo pipefail
 
 if [[ $# -ne 1 ]]; then
-  printf 'Usage: DEEPSEEK_API_KEY=... %s RECEIVER_BUNDLE\n' "$0" >&2
+  printf 'Usage: DEEPSEEK_API_KEY=... %s PROJECT [or RECEIVER_BUNDLE]\n' "$0" >&2
   exit 2
 fi
 if [[ -z ${DEEPSEEK_API_KEY:-} ]]; then
@@ -11,7 +11,19 @@ if [[ -z ${DEEPSEEK_API_KEY:-} ]]; then
 fi
 
 root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
-bundle=$(realpath -- "$1")
+if [[ -f "$1" ]]; then
+  bundle=$(realpath -- "$1")
+else
+  bundle="$root/keys/$1/receiver.json"
+fi
+if [[ ! -f "$bundle" ]]; then
+  printf 'receiver bundle not found: %s\n' "$bundle" >&2
+  exit 2
+fi
+if ! grep -q '"role": *"receiver"' "$bundle"; then
+  printf 'not a receiver bundle: %s\n' "$bundle" >&2
+  exit 2
+fi
 generated="$root/internal/embedded/generated.go"
 cleanup() { rm -f -- "$generated"; }
 trap cleanup EXIT INT TERM
